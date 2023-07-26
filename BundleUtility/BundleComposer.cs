@@ -13,10 +13,13 @@ namespace BundleUtility
             return CalculateMaxBundlesHelper(root);
         }
 
-        private int CalculateMaxBundlesHelper(Part root)
+        private int CalculateMaxBundlesHelper(Part root, int h = 0)
         {
             if (root == null)
                 return 0;
+
+            if (h == 0 && root.SubParts.Count == 0)
+                return int.MinValue;
 
             if (memo.ContainsKey(root))
                 return memo[root];
@@ -33,7 +36,7 @@ namespace BundleUtility
             {
                 if (subPart.Stock == int.MaxValue)
                 {
-                    int subPartBundles = CalculateMaxBundlesHelper(subPart) / subPart.Quantity;
+                    int subPartBundles = CalculateMaxBundlesHelper(subPart, h + 1) / subPart.Quantity;
                     minSubPartBundles = GetMinimum(minSubPartBundles, subPartBundles);
                 }
                 else
