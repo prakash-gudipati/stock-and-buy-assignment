@@ -1,22 +1,31 @@
 ﻿using System;
+using System.Collections.Generic;
 
 namespace BundleUtility
 {
     public class BundleComposer
     {
-        public int CalculateMaxBundles(Part root, int h = 0)
+        private Dictionary<Part, int> memo;
+
+        public int CalculateMaxBundles(Part root)
+        {
+            memo = new Dictionary<Part, int>();
+            return CalculateMaxBundlesHelper(root);
+        }
+
+        private int CalculateMaxBundlesHelper(Part root)
         {
             if (root == null)
                 return 0;
 
-            if (h == 0 && root.SubParts.Count == 0)
-            {
-                return int.MinValue;
-            }
+            if (memo.ContainsKey(root))
+                return memo[root];
 
             if (root.SubParts.Count == 0)
             {
-                return GetMaxStockForPart(root);
+                int maxStockForPart = GetMaxStockForPart(root);
+                memo[root] = maxStockForPart;
+                return maxStockForPart;
             }
 
             int minSubPartBundles = int.MaxValue;
@@ -24,13 +33,16 @@ namespace BundleUtility
             {
                 if (subPart.Stock == int.MaxValue)
                 {
-                    minSubPartBundles = GetMinimum(minSubPartBundles, (CalculateMaxBundles(subPart, h + 1) / subPart.Quantity));
+                    int subPartBundles = CalculateMaxBundlesHelper(subPart) / subPart.Quantity;
+                    minSubPartBundles = GetMinimum(minSubPartBundles, subPartBundles);
                 }
                 else
                 {
-                    minSubPartBundles = GetMinimum(minSubPartBundles, GetMaxStockForPart(subPart));
+                    int maxStockForSubPart = GetMaxStockForPart(subPart);
+                    minSubPartBundles = GetMinimum(minSubPartBundles, maxStockForSubPart);
                 }
             }
+            memo[root] = minSubPartBundles;
             return minSubPartBundles;
         }
 
@@ -44,4 +56,5 @@ namespace BundleUtility
             return (part.Stock / part.Quantity);
         }
     }
+
 }
